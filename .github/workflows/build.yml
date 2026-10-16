@@ -1,0 +1,36 @@
+name: Windows build and tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build, test and package
+        shell: cmd
+        run: package.cmd
+      - name: Upload portable application
+        uses: actions/upload-artifact@v7
+        with:
+          name: AngleReader-win-x64
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: test-output/self-test.txt
+          if-no-files-found: warn
